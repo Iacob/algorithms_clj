@@ -17,3 +17,23 @@
       
       )
     (persistent! t1) ) )
+
+(defn binary-search [coll item]
+
+  (let [midAm (atom 0)
+        loAm (atom 0) hiAm (atom (dec (count coll))) resultAm (atom nil) val1 item]
+    (while (and (<= @loAm @hiAm) (nil? @resultAm))
+      (reset! midAm (+ (int (/ (- @hiAm @loAm) 2)) @loAm))
+      ;; (println "----------------")
+      ;; (println "lo: " @loAm " hi: " @hiAm " mid: " @midAm)
+      ;; (println "lo: " (get coll @loAm) " hi: " (get coll @hiAm) " mid: " (get coll @midAm))
+      ;; (println "----------------")
+      (if (= (compare val1 (get coll @midAm)) 0)
+        (do (reset! resultAm @midAm))
+        (if (> (compare val1 (get coll @midAm)) 0)
+          (do (reset! loAm (inc @midAm)))
+          (do (reset! hiAm (dec @midAm))) )
+        )
+      )
+    @midAm )
+  )
