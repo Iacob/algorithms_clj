@@ -37,3 +37,36 @@
       )
     @midAm )
   )
+
+
+
+(def RED true)
+(def BLACK false)
+(defrecord RBNode [key val nodeNumAm colorAm leftAm rightAm])
+
+
+(defn rbtree-node-size [node]
+  "Calculate tree size/tree weight."
+  (let [cntAm (atom 0)]
+    (defn -count-node-size [n]
+      (when-not (or (nil? (:leftAm n)) (nil? @(:leftAm n)))
+        (reset! cntAm (inc @cntAm))
+        (-count-node-size @(:leftAm n)) )
+      (when-not (or (nil? (:rightAm n)) (nil? @(:rightAm n)))
+        (reset! cntAm (inc @cntAm))
+        (-count-node-size @(:rightAm n)) ) )
+    (-count-node-size node)
+    (when-not (nil? node) (reset! cntAm (inc @cntAm)))
+    (deref cntAm) ) )
+
+(defn rbtree-rotate-right [node]
+  "Rotate right."
+  (let [x @(:leftAm node)]
+    (reset! (:leftAm node) @(:right x))
+    (reset! (:rightAm x) node)
+    (reset! (:colorAm x) @(:colorAm node))
+    (reset! (:colorAm node) RED)
+    (reset! (:nodeNumAm x) @(:nodeNumAm node))
+    (reset! (:nodeNumAm h) (+ 1 (rbtree-node-size @(:leftAm node))
+                              (rbtree-node-size @(:rightAm node))))
+    x ) )
