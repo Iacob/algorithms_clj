@@ -67,6 +67,54 @@
     (reset! (:colorAm x) @(:colorAm node))
     (reset! (:colorAm node) RED)
     (reset! (:nodeNumAm x) @(:nodeNumAm node))
-    (reset! (:nodeNumAm h) (+ 1 (rbtree-node-size @(:leftAm node))
+    (reset! (:nodeNumAm node) (+ 1 (rbtree-node-size @(:leftAm node))
                               (rbtree-node-size @(:rightAm node))))
     x ) )
+
+
+
+(defrecord ShortPath [from to lenAm prevAm])
+
+(defn shortest-path [paths]
+
+  (let [PathList (transient [])]
+  
+    (defn -merge-path [shortPath]
+      (let [ifMatchedAm (atom false)]
+        (doseq [pathItemIdx (range 0 (count PathList))]
+          (let [pathItem (get PathList pathItemIdx)]
+            
+            (when (and (= (:from pathItem) (:from shortPath))
+                       (= (:to pathItem) (:to shortPath)))
+              
+              (reset! ifMatchedAm true)
+              
+              (let [pathLen @(:lenAm pathItem) newLen @(:lenAm shortPath)]
+                (when (or (nil? pathLen) (> pathLen newLen))
+                  (reset! (:lenAm pathItem) newLen)
+                  (reset! (:prevAm pathItem) @(:prevAm shortPath)) ) ) ) ) )
+        (when-not @ifMatchedAm
+          (conj! PathList shortPath) ) ) )
+    
+    
+    (doseq [path paths]
+      
+      (let [newPath (->ShortPath (nth path 0)
+                                 (nth path 1)
+                                 (atom (nth path 2))
+                                 (atom nil))]
+        (conj! PathList newPath)
+        
+        (let [mergeList (transient [])]
+          (doseq [pathItemIdx (range 0 (count PathList))]
+            (let [pathItem (get PathList pathItemIdx)]
+              (when (= (:to pathItem) (nth path 0))
+                (conj! mergeList (->ShortPath (:from pathItem)
+                                              (nth path 1)
+                                              (atom (+ @(:lenAm pathItem)
+                                                       (nth path 2)))
+                                              (atom (:to pathItem)))) ) ) )
+          (doseq [mergeItem (persistent! mergeList)]
+            (-merge-path mergeItem) ) ) ) )
+
+    (persistent! PathList) ) )

@@ -7,43 +7,39 @@
   [& args]
   ;;(println "Hello, World!")
 
-  ;; (->
-  ;;  (algo/selection-sort ["c" "a" "e" "b" "f" "z"])
-  ;;  (println))
+  (def paths [[:A :B 1] [:A :F 1]
+              [:B :C 2] [:B :F 2]
+              [:C :D 3] [:C :F 1]
+              [:D :E 4]
+              [:F :G 10]
+              [:E :Z 5]
+              [:G :Z 11]])
 
-  ;; (defn get-sequence []
-  ;;   (let [list1 (transient []) sorted (sort ["a" "b" "c" "d" "e" "f" "g"])]
-  ;;     (doseq [item1 sorted]
-  ;;       (conj! list1 item1) )
-  ;;     (persistent! list1) ) )
+  ;;(def PathList (transient []))
 
-  ;; (def list1 (get-sequence))
+  ;;(defrecord ShortPath [from to lenAm prevAm])
 
 
   (->
-   (algo/binary-search ["a" "b" "c" "d" "f" "g" "h" "i"] "e")
+   (algo/shortest-path paths)
    (println))
+
+
+  ;; (doseq [pathItem (persistent! PathList)]
+  ;;   (println (:from pathItem) (:to pathItem) @(:lenAm pathItem) @(:prevAm pathItem)) )
   
 
-  ;; (println list1)
-  ;; (println (get list1 0))
-
-  ;; (let [midAm (atom 0)
-  ;;       loAm (atom 0) hiAm (atom (dec (count list1))) val1 "z"]
-  ;;   (while (<= @loAm @hiAm)
-  ;;     (reset! midAm (+ (int (/ (- @hiAm @loAm) 2)) @loAm))
-  ;;     (println "----------------")
-  ;;     (println "lo: " @loAm " hi: " @hiAm " mid: " @midAm)
-  ;;     (println "lo: " (get list1 @loAm) " hi: " (get list1 @hiAm) " mid: " (get list1 @midAm))
-  ;;     (println "----------------")
-  ;;     (if (= (compare val1 (get list1 @midAm)) 0)
-  ;;       (do (println "end with: " @midAm))
-  ;;       (if (> (compare val1 (get list1 @midAm)) 0)
-  ;;         (do (reset! loAm (inc @midAm)))
-  ;;         (do (reset! hiAm (dec @midAm))) )
-  ;;       )
-  ;;     (Thread/sleep 1000)
-  ;;     )
+  ;; (let [node12 (->Node "a" 1 (atom nil) (atom nil) (atom nil) (atom nil))
+  ;;       node13 (->Node "a" 1 (atom nil) (atom nil) (atom nil) (atom nil))
+  ;;       node11 (->Node "a" 1 (atom nil) (atom nil) (atom node12) (atom node13))
+  ;;       node21 (->Node "a" 1 (atom nil) (atom nil) (atom nil) (atom nil))
+  ;;       node1 (->Node "a" 1 (atom nil) (atom nil) (atom node11) (atom node21))
+  ;;       ]
+  ;;   (println (rbtree-node-size node1))
   ;;   )
+
+  ;; (->
+  ;;  (algo/binary-search ["a" "b" "c" "d" "f" "g" "h" "i"] "e")
+  ;;  (println))
   
   )
