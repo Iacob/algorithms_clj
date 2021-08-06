@@ -118,3 +118,42 @@
             (-merge-path mergeItem) ) ) ) )
 
     (persistent! PathList) ) )
+
+
+
+(defn threeway-sort [strCol]
+  (defn -exch [arr pos1 pos2]
+    (do
+      (let [tmp (get arr pos1)]
+        (assoc! arr pos1 (get arr pos2))
+        (assoc! arr pos2 tmp) ) ) )
+  (defn -sort1 [strArr lo hi charIdx]
+    (when (< lo hi)
+      (let [ltAm (atom lo) gtAm (atom hi)
+            vAm (atom (get (get strArr lo) charIdx)) iAm (atom (inc lo))
+            ]
+        ;;
+        (while (<= @iAm @gtAm)
+          (let [t (get (get strArr @iAm) charIdx)]
+            (if (< (int t) (int @vAm))
+              (do
+                (-exch strArr @ltAm @iAm)
+                (swap! ltAm inc)
+                (swap! iAm inc) )
+              
+              (if (> (int t) (int @vAm))
+                (do
+                  (-exch strArr @iAm @gtAm)
+                  (swap! gtAm dec) )
+                (swap! iAm inc) )
+              )
+            )
+          )
+        
+        (-sort1 strArr lo (dec @ltAm) charIdx)
+        (when (> (int @vAm) 0) (-sort1 strArr @ltAm @gtAm (inc charIdx)))
+        (-sort1 strArr (inc @gtAm) hi charIdx) ) ) )
+  
+  (let [strArr (transient strCol)]
+    (-sort1 strArr 0 (dec (count strCol)) 0)
+    (println (persistent! strArr)) ) )
