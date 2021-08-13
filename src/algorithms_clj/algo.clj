@@ -122,38 +122,111 @@
 
 
 (defn threeway-sort [strCol]
+  (println "Original strCol: " strCol)
+  (defn -charcode [str pos]
+    (let [x (get str pos)]
+      (if (nil? x) -1 (int x)) ) )
   (defn -exch [arr pos1 pos2]
+    (println "exchange characters at " pos1 " and " pos2)
     (do
       (let [tmp (get arr pos1)]
         (assoc! arr pos1 (get arr pos2))
-        (assoc! arr pos2 tmp) ) ) )
+        (assoc! arr pos2 tmp) ) )
+    
+    (doseq [x (range 0 (count arr))]
+      (print (str x ":" (get arr x) ", ")) )
+    (print "\n")
+    )
   (defn -sort1 [strArr lo hi charIdx]
     (when (< lo hi)
       (let [ltAm (atom lo) gtAm (atom hi)
-            vAm (atom (get (get strArr lo) charIdx)) iAm (atom (inc lo))
-            ]
+            vAm (atom (-charcode (get strArr lo) charIdx)) iAm (atom (inc lo))]
         ;;
         (while (<= @iAm @gtAm)
-          (let [t (get (get strArr @iAm) charIdx)]
-            (if (< (int t) (int @vAm))
+          (let [t (-charcode (get strArr @iAm) charIdx)]
+            (if (< t @vAm)
               (do
+                (println "t < v")
                 (-exch strArr @ltAm @iAm)
                 (swap! ltAm inc)
                 (swap! iAm inc) )
               
-              (if (> (int t) (int @vAm))
+              (if (> t @vAm)
                 (do
+                  (println "t > v")
                   (-exch strArr @iAm @gtAm)
                   (swap! gtAm dec) )
-                (swap! iAm inc) )
-              )
-            )
-          )
+                (swap! iAm inc) ) ) ) )
         
         (-sort1 strArr lo (dec @ltAm) charIdx)
-        (when (> (int @vAm) 0) (-sort1 strArr @ltAm @gtAm (inc charIdx)))
+        (when (> @vAm 0) (-sort1 strArr @ltAm @gtAm (inc charIdx)))
         (-sort1 strArr (inc @gtAm) hi charIdx) ) ) )
   
   (let [strArr (transient strCol)]
     (-sort1 strArr 0 (dec (count strCol)) 0)
     (println (persistent! strArr)) ) )
+
+
+
+(defn kmp_compile_pattern [pattern]
+  "Compile pattern to DFA."
+  (defn -charCodeAt [str pos]
+    (let [x (get str pos)]
+      (if (nil? x) -1 (int x)) ) )
+  (let [M (count pattern) R 256
+        restartAm (atom 0)
+        dfa (to-array-2d (repeat R (repeat M 0)))]
+    (aset dfa (-charCodeAt pattern 0) 0 1)
+
+    (doseq [j (range 1 M)]
+      ;; Copy mismatch cases
+      (doseq [c (range 0 R)]
+        (aset dfa c j (aget dfa c @restartAm)) )
+      ;; match case
+      (aset dfa (-charCodeAt pattern j) j (inc j))
+      ;; set restart position
+      (reset! restartAm (aget dfa (-charCodeAt pattern j) @restartAm)) )
+    
+    dfa ) )
+
+(defn kmp_search [pattern dfa text]
+  (let [iAm (atom 0) jAm (atom 0) N (count text) M (count pattern)]
+    (while (and (< @iAm N) (< @jAm M))
+      (reset! jAm (aget dfa (-charCodeAt text @iAm) @jAm))
+      (swap! iAm inc) )
+    (if (= @jAm M)
+      (- @iAm M)
+      N ) ) )
+
+ ;; (let [pattern "abad" dfa (compile_pattern pattern)]
+ ;;  (->
+ ;;   (kmp_search pattern dfa "zeccabadi")
+ ;;   (println) ) )
+
+
+
+;; (let [list1 ["Harris    1"
+;;              "Martin    1"
+;;              "Moore     1"
+;;              "Anderson  2"
+;;              "Martinez  2"
+;;              "Miller    2"
+;;              "Robinson  2"
+;;              "White     2"
+;;              "Brown     3"
+;;              "Davis     3"
+;;              "Jackson   3"
+;;              "Jones     3"
+;;              "Taylor    3"
+;;              "Williams  3"
+;;              "Garcia    4"
+;;              "Johnson   4"
+;;              "Smith     4"
+;;              "Thomas    4"
+;;              "Thompson  4"
+;;              "Wilson    4"]]
+
+;;   (let [strCol (apply vector (map str (map #(get %1 0) list1)))]
+;;     (threeway-sort strCol) ) )
+
+
